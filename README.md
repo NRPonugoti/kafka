@@ -199,3 +199,137 @@ $ ls -l
  controller.properties 
  producer.properties 
  
+ # Kafka Core Fundamentals :
+ ============================
+ 
+Event : anything that "happend" 
+Also known as 
+        * Record 
+		* Message 
+
+
+Kafka is an event streaming platform , it can capture any event whenevery it occures in your application 
+then it stores those event safely in some place intenrally , so that they can be delivered to other application 
+it can be delivery the messages in real time for procesing 
+
+Kafka is opensource and distributed 
+itmostly developed in java , some components in Scala 
+
+# how does kafka store the messages? 
+
+Kafka has something called Topic ,its way of collecting and organizing data within  a kafka cluster 
+
+
+
+<img width="1166" height="493" alt="image" src="https://github.com/user-attachments/assets/94aeb597-1b1e-45d5-a4bb-5c4ad6bbc863" />
+
+
+let's assume that this is our kafka server and we have some topics created 
+
+whenever an User places an order , this application writes that information as event in this kafka topic , this could be order event topic 
+Then we have another application develoled using Python , it could be a payment service , this application consumes messages and charges payment for the user 
+
+Any Application producess messages is called a Producer , similarly , any applicaiton which consumes the messages is called a Consumer 
+
+
+
+what will happen if this single Kafka node crashes due to out of memory ?
+what will happen to our applicaiton ? how can they communicate ? what will happen to all our orders ?
+
+Kafka Cluster ?
+
+Running a single Kafka server is Okay for local development or lower environment like DEV, QA 
+but we don not do that for production environment 
+we will be running multiple kafka server together in clustomer mode 
+each box represnet one Kafka Node , we call the whole setup a kafka cluster 
+
+<img width="1519" height="751" alt="image" src="https://github.com/user-attachments/assets/d0218877-888d-41dd-9dee-85ea55ce81e2" />
+
+Advantages : 
+
+High availability  : any single node failure will not affect our application 
+Horizontal Scalability : Our application are going to talk to the kafka server , send messages to the Kafka server 
+how many request can a single Kafka server can handle at the time , so we have to run multiple Kafka instances to distributed the Load 
+
+
+
+# Kafka Node Roles :
+
+Two Roles 
+
+1. Broker  : The Producer and the consumer appication will be talking to a broker , we can have multiple brokers in a cluster 
+     * Stores data 
+	 * Handles read and write requests 
+2. Controller : Responsible for the managing the cluster becuase in a large cluster , then there are multiple machines working togheter 
+   someone has to act like a manager and guide those node 
+   
+   at any given time , we will be having only one active controller in a cluster and controller does not handle the client communication 
+   
+   * Manages the kafka cluster 
+   * Not involved in the Client Communication 
+   * At any given time , A Cluster has only one Active Contrller 
+   * Manages Brokers CoOrdination 
+   * One Node act  like a Controller 
+  
+  If we can only one Controller , what if the controller die ? 
+  again , it is going to be a single point of failure , Actually No , All Orther Nodes , they can elect Another Node as a new Controller 
+  This is how we can assign the roles to a kafka Node 
+  Property 
+  
+  # Broker 
+              process.roles=broker 
+             #Controller-only Node 
+             Process.roles=controller 
+             #broker + controller eligible node 
+             process.roles=broker, controller 
+
+
+<img width="1797" height="751" alt="image" src="https://github.com/user-attachments/assets/4205793e-ec2b-4f50-98b7-b0ccdcfa0517" />
+
+ Process.roles=controller 
+We have cluster with 100 Nodes , we make 3 node as a controller But One Node act as a Controller and Other 2 Controller are Standby  If Controller Node die , Standby Node will become a Controller 
+
+  Inside Kafka Container :
+  /opt/kafka/config$ grep '^process.role' broker.properties 
+  process.role=broker 
+  /opt/kafka/config$ grep '^process.role' controller.properties 
+  process.role=controller 
+ 
+ /opt/kafka/config$ grep '^process.role' server.properties 
+  process.role=broker , controller 
+  
+  /opt/kafka/config$ ../bin/kafka-server-start.sh  broker.properties 
+  
+  so by default in this docker container , it uses server.properties  
+
+
+
+# Kafka Cluster 
+<img width="1374" height="728" alt="image" src="https://github.com/user-attachments/assets/7cbe4c27-c7dd-49c7-be24-745f4c885cd9" />
+
+
+
+  Let's imagine , we want to create a topic called Order event , The Controller it is a boss 
+  so controller will find one broker and it will ask this broker that hey broker you own the Order event topic 
+  you handle the read and write request and this broker will happily accept that 
+  so when ever producer application produce the order events so this broker will write that in the machine when the consumer 
+  application asks for the messages ,the broker will delivery those  message 
+  What if this  broker mission dies ? 
+  
+  this is why then the controller finds the broker , it will also identify few other nodes to be the backup
+  so the data will be replicated to other instances as well 
+
+
+  # Summerize 
+  
+   - Single kafka Node is okay for development purpose But its not good for Production environment where we need high availability and harizontal scalability 
+   - So we will be running multiple kafka servers in the cluster mode , we developers we simply call them Kafka server or kafka Node 
+	         But they can play specific roles in the cluster 
+   - Brokers to handles read and write request 
+   - Cotroller to manage the cluster Operations 
+   - Small cluster in the standalone kakfa instance like docker container , it will have both broker / controller roles 
+   - At any given time we will be having only one controller if the controller goes down for some reason , 
+	       ther will be another controller eligible node , it will be ready to take over immediately 
+   - similarly when the leader broker dies for some reason there might be another follower broker , it will be ready to take over immediately
+      So there will not be any single point of failure and our application will not be interupted 
+	 
