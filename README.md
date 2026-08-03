@@ -359,3 +359,100 @@ My Application is trying to connect to the cluster using this IP Address(Node) B
 it is a Problem , In those cases , you can identify a few more machines , like set of machines , Anything can act like a bootstrap server 
 So you can identify a few more machines and you can provide them as a list in your application.properties 
 So as long as youa application can talk to one of these servers , Then it will work just fine 
+
+
+
+
+# Demo Kafka Topic 
+
+$ docker exec -it kafka bash 
+/opt/kafka/bin$ ls 
+/opt/kafka/bin$ ./kafka-topics.sh 
+--bootstrap-server<String: server to connect to>  Required 
+--create                                          create a topic 
+--delete                                          delete a topic 
+--list                                            List all available topics 
+--topic <String: topic>                           the topic to create 
+
+# create a topic 
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic order-events 
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic payment-events 
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic shipping-events 
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --list 
+
+#more details about the topic 
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --describe  --topic order-events 
+
+# Delete tpic 
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic order-events 
+
+
+# Demo: Console Producer 
+
+kafka console producer :  learning , testig 
+
+/opt/kafka/bin$ ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic dem-topic 
+/opt/kafka/bin$ ./kafka-console-producer.sh  --ENTER 
+ --bootstrap-server<String: server to connect to>  Required the server to connect to the borker list strng in the form HOST1:PORT1 ,HOST2:PORT2
+ --topic<String : topic>REQUIRED: the topic name to produce message to 
+/opt/kafka/bin$  ./kafka-console-producer --bootstrap-server localhost:9092 --topic demo-topic  --Enter 
+> hello 
+>1
+
+# Demo: Console Consumer 
+
+/opt/kafka/bin$ ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic demo-tpic 
+
+the consumers by default they will be consuming only the new messages 
+we can adjust this behaviour 
+i wnat to see all message latst and old messages 
+#opt/kakfa/bin$ ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic demo-project --from-beginning  
+consumer see all message 
+
+
+# Console Producer TimeOut Configuration :
+/opt/kafka/bin$ ./kafka-console-producer.sh --bootstrap-server localhost:9092 --topic demo-topic 
+
+
+/opt/kafka/bin$ ./kafka-console-consumer.sh  --bootstrap-server localhost:9092 --topic demo-topic 
+
+Producer sending message but consumer consume the message with some delay and getting batch messages sometimes 
+no kafka server slow , this console producer behaviour , overriding one property 
+
+Console Producer 
+/opt/kafka/bin$ ./kafka-console-producer --bootstrap-server localhost:9092 --topic demo-topic --timeout 0 
+ 
+timeout by default is 1 second  like 1000ms 
+
+ show timeout options --default 1 seconds 
+#opt/kafka/bin$ ./kafka-console-producer.sh 
+--timeout <Long :timeout_ms>        `linger.ms` in producer configs 
+
+console producer keeps the messages in a queue then it delivers them in batches 
+
+
+# linger.ms vs batch.size 
+
+<img width="1082" height="530" alt="image" src="https://github.com/user-attachments/assets/f5b79c7d-2b71-4e57-bd57-c3c5ab48ffcf" />
+
+
+
+
+# Consumer -Push or pull ?
+whenever we send the messages to the kafka server ,does the kafka server push messages to the consumer or the consumer pulls 
+the messages from the kafka server ? 
+
+so kafka server will not push the messages to the consumer , The consumer has to pull the messages from the kafka topic or broker 
+
+The Connection b/w the kafka broker and the consumer is the persistent TCP Connection so why can this Kafka server not push the messages using the connection ? 
+
+for kafka , each and every messages has to be delivered to the consumer and it expects some kind of an acknowledgement from consumer that , yes i saw that messages if we skip the whole acknowledgement step ,what will happen here is 
+producer is producing super fast ,10,000 messages per second , kafka broker might be pushing all the messages to the consumer but what if the consumer is not able to keep up with this producer speed ? so now we will be losing the messages 
+your are seeing the problem 
+
+so for kafka , each and every messages has to be processed safely and reliably because of this reason , it will not push the message instead , it will ask the consumer to ask for the messages , only then it will delivery 
+
+### consumer Properties 
+                       max.poll.records: 500
+Producer sends 10000 messages to kafka server but consumer takes 500 messages as per max.poll.records 
+<img width="1700" height="794" alt="image" src="https://github.com/user-attachments/assets/9ae5a0bc-da9a-4d3e-9c05-480c227e2729" />
