@@ -456,3 +456,106 @@ so for kafka , each and every messages has to be processed safely and reliably b
                        max.poll.records: 500
 Producer sends 10000 messages to kafka server but consumer takes 500 messages as per max.poll.records 
 <img width="1700" height="794" alt="image" src="https://github.com/user-attachments/assets/9ae5a0bc-da9a-4d3e-9c05-480c227e2729" />
+
+
+
+
+# How kafka store messages internally ?
+
+Kafka stores and it transports everything as bytes , it does not understand your mesage
+kafka job accept the messages from the producer and delivery the messages to the consumer 
+Serialization and deserialization its done by the individual applications , not broker 
+
+Producer side  configure how to serialize the messages similarly the consumer side we have to configure how to deserialize the messages 
+Kafka client library comes with some basic serializer and deserializer 
+
+Can use jackson library to serialize our object into JSON then JSON can be converted into bytes array that is how we will be sending 
+Spring framework will be doing all this heavy lifting for us 
+
+### Console Producer / Console Consumer 
+    - Tools for learning and testing 
+	- Treat messages as String by default 
+	- Under the hood : 
+	        Producer ==> String ----> byte[] 
+			Consumer ==> byte[] ----> String 
+			
+		
+		
+# Log Retention 
+
+kafka store data on disk and consumer can read that data later 
+
+How long kafka keep the data ? 
+depends on the log retention policy 
+server.properties files 
+be default , kafka keeps data for 168 hours which is seven days 
+log.retention.hours=168 
+log.retention.bytes
+
+
+
+# Offset Fundamentals  - Offset in kafka topics 
+
+whenever the messages are sent to a topic , kafka will be storing the messages in in the order it receives 
+it delivery the messages only in the order it received 
+so it assign one unique number we call that Offset like array Index it starts from Zero 
+
+OffSet max value = Long.MAX_VALUE 
+
+<img width="1234" height="591" alt="image" src="https://github.com/user-attachments/assets/689e5c2d-3c99-4165-80d0-4fbde7a9bcb8" />
+
+
+<img width="1225" height="593" alt="image" src="https://github.com/user-attachments/assets/fd7e2db8-c4e1-4ad5-9f71-328a0a08a9af" />
+
+
+
+
+<img width="1191" height="498" alt="image" src="https://github.com/user-attachments/assets/e806ead5-9ca8-4501-977b-dd815e087d1e" />
+
+
+In some cases , you might want to know when the messages were produced so timestamp of the messages 
+so if you want , we can also print that 
+
+<img width="1320" height="330" alt="image" src="https://github.com/user-attachments/assets/3aa1d287-c97a-4da2-acf4-040b7fe54695" />
+
+
+
+# Multiple Consumers 
+
+ One Producer and 2 Consumers 
+
+ One Producer produces the message and 2 Consumers are consumes the messages 
+
+ Order-service microsservices , it keeps on sending the messages to a kafka topic called order events 
+ there are two other micro services , inventory service and payment service , Both of them are interested in consuming 
+ these events because it has to process inventory and payment for the order 
+ but in real life , I will not be running one single instance in the production 
+ I would be running multiple instances of inventory services , multiple instances of payment serivce 
+ so the problem here is all the instances will be receving the same order event so we will end up doing redundant processing 
+
+ what we really want is only one instance should be receiving that order event then all order instances should not be receiving the same event 
+ so this is exactly what want 
+
+<img width="1225" height="592" alt="image" src="https://github.com/user-attachments/assets/e05c03b3-8eee-4642-9eb5-b71c7e05ee5a" />
+
+ Lets discuss How Kafka Solves this problem , Kafka has a concept of Consumer Group 
+
+ <img width="1862" height="908" alt="image" src="https://github.com/user-attachments/assets/db305988-dc76-4521-b5ea-86f87a471736" />
+
+
+<img width="1794" height="868" alt="image" src="https://github.com/user-attachments/assets/76771410-02a3-43ff-b99b-8dc435c21d96" />
+
+
+when we have multiple consumers in a Consumer Group only one consumer gets the messages so we do not do redundant processing 
+When we have multiple consumers from different group ,both of them get the messages 
+
+when we have multiple consumers in a consumer group , we could have probably expected The messages should have been distributed b/w these two consumers , however  it does not seem to be behaving like this , Only one consumer gets all the messages . default behavior 
+### List all the consumer groups 
+  ./kafka-consumer-group.sh --bootstrap-server localhost:9092 --list 
+
+
+<img width="1342" height="440" alt="image" src="https://github.com/user-attachments/assets/2f45312e-416d-41e0-9735-becc6d831339" />
+
+
+<img width="1855" height="920" alt="image" src="https://github.com/user-attachments/assets/010eae8a-b18b-4eae-ac66-71d8df507812" />
+
