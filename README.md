@@ -559,3 +559,49 @@ when we have multiple consumers in a consumer group , we could have probably exp
 
 <img width="1855" height="920" alt="image" src="https://github.com/user-attachments/assets/010eae8a-b18b-4eae-ac66-71d8df507812" />
 
+
+# Message Ordering 
+
+kafka is an event streaming platform and message ordering is very importanet for kafka 
+and in the same order , it will be delivering the messages to the consumer 
+
+if I have a topics and if i have thousands of events then I cannot horizontally scale 
+I have to have only one consumer to process all the events but actually No , Kafka gives a solution for that 
+That is where the partition concept comes in 
+
+<img width="1249" height="536" alt="image" src="https://github.com/user-attachments/assets/62cd4f0b-87d4-4cda-ba4b-30632e49eafd" />
+
+# Topics / Partitions 
+Topic is logical abstraction 
+Partitions are physical storage units that where the data is stored 
+so we can say a topic is divided into multiple partitions 
+
+
+when we create a topic we have to mention how many partitions we want 
+./kafka-topics.sh --bootstrap-server localhost:9092 --topic order-events --create --partitions 2
+
+
+<img width="1257" height="591" alt="image" src="https://github.com/user-attachments/assets/247a2833-458f-4d53-9b4f-84fea625124b" />
+
+Message what ever we produce that can have a key 
+partition = hash(key) % number_of_partitions 
+
+	How are we solving the scalability issues ? 
+since we have multiple partitions and the order is guaranteed within the accounts , kafka can happily assign the whole partition to this consumer , now we have parallel processing 
+
+offset belongs to the partitions 
+
+There is a very good chance that one partition might be having more messages compared to another partition 
+
+### who is calculating this portition 
+is this done by the kafka server ? actually No 
+it is done by client library , In our application , we will be producing messages , events along with key then we will be submitting the messages or providing the messages to the client library to send to kafka so that time the client ibrary using the key then using this code , it will be finding the partition then it will be submitting the information to the kafka server saying this message goes to this partition and all 
+
+<img width="1878" height="859" alt="image" src="https://github.com/user-attachments/assets/fe6188dd-9cf7-4585-b0e1-557e8910d086" />
+
+# Demo: Multi-Partition Topic 
+
+<img width="1591" height="890" alt="image" src="https://github.com/user-attachments/assets/713aef83-62eb-4cbe-94a3-cfc9d6b2bb4d" />
+
+This is actually correct for a topic with one partition when you create a topic with only one partition 
+so there will be one node that could be the leader for the topic 
