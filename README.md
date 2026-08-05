@@ -605,3 +605,44 @@ it is done by client library , In our application , we will be producing message
 
 This is actually correct for a topic with one partition when you create a topic with only one partition 
 so there will be one node that could be the leader for the topic 
+
+
+<img width="1257" height="645" alt="image" src="https://github.com/user-attachments/assets/ef25bc91-70e2-46ae-894c-5e9e327d48ac" />
+
+there will be one node that could be the leader for the topic or leader for the partition 
+there could be another node follower for the partition 
+
+when we create topic with multiple partitions , it is not like all the partitions will be part of the single node 
+the controller might distribute these partition across different broker node 
+so if you create one topic with two partition , one leader for the partition 0 and another leader for partition 1 
+
+The Partition can be distributed across different nodes 
+.opt/kafka/config$grep '^node.id' server.properties 
+node.id=1 
+in the cluster , each and every single node will be given one unique ID 
+# Demo : Consumer Group with 2 Partitions 
+<img width="1805" height="807" alt="image" src="https://github.com/user-attachments/assets/a02feca2-806e-4475-93ca-e815f4b50d4a" />
+
+
+
+# Partition Rebalancing 
+ I am having a topic with 2 partition and one consumer is starting with consumer group: payment-service and i am sending an messages and those messages received the single consumer 
+
+ after sometime ,One more consumer now is joining from the same payment-service group when this consumer joins ,kafka will do something called partition rebalancing 
+ what it means is that when this consumer joins , kafka can detect this , now it can see that i am having this topic with 2 partitions , I have assigned both partitions to this consumer , Now I am seeing the one new consumer from the consumer group 
+ so i can assign one partition to this consumer and another partition to this consumer 
+
+<img width="1829" height="827" alt="image" src="https://github.com/user-attachments/assets/417792c9-6789-4b5b-b33d-cf9b32778161" />
+
+Whenever consumers join a group , whenever consumers leave a group , kafka will be doing the partition rebalancing 
+
+<img width="1762" height="881" alt="image" src="https://github.com/user-attachments/assets/0d2879a7-e0c6-4d91-94c3-8704fa1f01b3" />
+
+
+# Modifying Partitions Count 
+./kafka-topics.sh  --bootstrap-server localhost:9092 --topic order-events --alter  --partitions 4 
+
+<img width="1227" height="578" alt="image" src="https://github.com/user-attachments/assets/7e6c7f39-43ac-4587-be97-227583304da0" />
+
+
+<img width="1026" height="386" alt="image" src="https://github.com/user-attachments/assets/66daf728-5ce5-4179-a971-0b370f42fc8d" />
