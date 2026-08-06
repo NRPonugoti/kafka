@@ -646,3 +646,16 @@ Whenever consumers join a group , whenever consumers leave a group , kafka will 
 
 
 <img width="1026" height="386" alt="image" src="https://github.com/user-attachments/assets/66daf728-5ce5-4179-a971-0b370f42fc8d" />
+
+
+
+# Kafka Summary 
+
+<img width="1859" height="920" alt="image" src="https://github.com/user-attachments/assets/e5dd55ef-0429-489f-85d9-ce7622d8b196" />
+
+
+we normally do not run one single kafka server in Production environment 
+we will be running a group of kafka servers as a cluster 
+Each kafka Node will start with some roles either broker or controller or broker, controller 
+if Node has broker role , it will handle client request , read and write 
+If Node has a Controller role , it is eligible to play the controller role 
