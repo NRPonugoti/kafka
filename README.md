@@ -659,3 +659,41 @@ we will be running a group of kafka servers as a cluster
 Each kafka Node will start with some roles either broker or controller or broker, controller 
 if Node has broker role , it will handle client request , read and write 
 If Node has a Controller role , it is eligible to play the controller role 
+
+
+
+
+# Spring Cloud Stream 
+   Spring Cloud Stream : A Spring module / framework for building event-driven / message -driven microservices 
+
+<img width="1179" height="802" alt="image" src="https://github.com/user-attachments/assets/619e605e-d6db-4493-baa8-3a8167da5817" />
+
+Spring Cloud Stream : Kafka Binder , Binder is nothing but driver , its client library to talk to Kafka , it binds the application to the messaging systems 
+Spring Cloud Stream are use Java 8 functional Interfaces ( Supplier , Function , Consumer )
+
+<img width="1904" height="896" alt="image" src="https://github.com/user-attachments/assets/2e64530f-4668-4647-a2b9-0114f66adc43" />
+
+
+<img width="1881" height="1002" alt="image" src="https://github.com/user-attachments/assets/6e73a451-386e-40da-b3a4-9ad1ccf9d8bb" />
+
+How Do we really map this bean with the topic ? how does the configuration look like 
+ For that Spring uses some naming convention 
+ <function-name>-out-<index> [orderEventProducer-out-0]   like a Producer 
+ <function-Name>-in-<index>  [paymentEventConsumer-in-0]  this function expect the input , its consumer 
+
+<img width="1836" height="977" alt="image" src="https://github.com/user-attachments/assets/5dbcae9e-d414-4209-abb4-f3f19c2b0af0" />
+<img width="1820" height="692" alt="image" src="https://github.com/user-attachments/assets/da4af7e0-4e4f-42ac-8e95-685db7aa2c06" />
+<img width="1803" height="673" alt="image" src="https://github.com/user-attachments/assets/fd8e1631-1f62-4ee1-ba3e-1f62aae0b499" />
+<img width="1801" height="681" alt="image" src="https://github.com/user-attachments/assets/45154789-7807-4ae9-ae61-6d1175595574" />
+
+
+Function : 
+    definition : bean name here 
+
+<img width="1776" height="684" alt="image" src="https://github.com/user-attachments/assets/ee7ecb6c-3eef-411f-b1fd-41667fe370ef" />
+
+
+
+<img width="1696" height="849" alt="image" src="https://github.com/user-attachments/assets/8236bf2c-50bd-4912-9c3d-917266a58683" />
+
+<img width="1741" height="832" alt="image" src="https://github.com/user-attachments/assets/2ae94ff3-cc84-4b8a-9d0d-2b3ba04d8f9f" />
