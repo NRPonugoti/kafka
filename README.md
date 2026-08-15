@@ -647,7 +647,51 @@ Whenever consumers join a group , whenever consumers leave a group , kafka will 
 
 <img width="1026" height="386" alt="image" src="https://github.com/user-attachments/assets/66daf728-5ce5-4179-a971-0b370f42fc8d" />
 
+# offSet Tracking 
 
+kafka assign unique number to each message within a partition , this is offset 
+kafka internally maintaine some kind of a ledger 
+when every consumer group subscribe to a topic for the very first time 
+kafka starts tracking it 
+
+### create a topic with two partition 
+ docker exec -it kafka bash 
+ 
+ ``` xml
+ ./kafka-topic.sh \
+  --bootstrap-server localhost:9092 \
+  --topic offset-tracking-topic \
+  --create \
+  --partitions 2 
+ ```
+ Start Console Producer 
+ 
+ ``` xml
+ ./kafka-console-producer.sh \
+ -- bootstrap-server localhost:9092
+ --topic offset-tracking-topic \
+ -- property parse.key=true \
+ --property key.separation=:
+ ```
+ 
+ start consumer 
+ ``` xml 
+ ./kafka-console-consumer.sh \
+ --bootstrap-server localhost:9092 \
+ -- topic offset-tracking-topic \
+ -- property print.offset=true \
+ --property print.key=true \
+ --group cg 
+ ``` 
+ 
+ descruber the consumer group :
+ 
+ ``` xml
+ ./kafka-consumer-group.sh \
+ --bootstrap-server localhost:9092 \
+ --describe \
+ -- group cg 
+<img width="1891" height="919" alt="image" src="https://github.com/user-attachments/assets/ea6f6839-48cc-4d02-b307-1a773dbf3dc3" />
 
 # Kafka Summary 
 
