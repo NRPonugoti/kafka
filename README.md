@@ -690,8 +690,28 @@ kafka starts tracking it
  ./kafka-consumer-group.sh \
  --bootstrap-server localhost:9092 \
  --describe \
- -- group cg 
+ -- group cg
+```
+
 <img width="1891" height="919" alt="image" src="https://github.com/user-attachments/assets/ea6f6839-48cc-4d02-b307-1a773dbf3dc3" />
+
+
+
+ # reset Kafka Options 
+
+<img width="1912" height="927" alt="image" src="https://github.com/user-attachments/assets/1ec23e10-0b33-4d64-b65c-e19da5d1582b" />
+
+Reset Options apply for all partitions 
+ Reset Offset by Shifting backward 
+ ``` xml 
+ ./kafka-consumer-group.sh \
+ --bootstrap-server localhost:9092 \
+ --topic offset-tracking-topic \
+ --group cg \
+ -- reset-offsets \
+ --shift-by -3 \
+ --dry-run 
+```
 
 # Kafka Summary 
 
