@@ -761,3 +761,23 @@ Function :
 <img width="1696" height="849" alt="image" src="https://github.com/user-attachments/assets/8236bf2c-50bd-4912-9c3d-917266a58683" />
 
 <img width="1741" height="832" alt="image" src="https://github.com/user-attachments/assets/2ae94ff3-cc84-4b8a-9d0d-2b3ba04d8f9f" />
+
+
+
+
+# Spring cloud Stream : Building Producer Application 
+
+     1. Build a simple producer application 
+	 2. Produce message with Key 
+	 3. Produce messages dynamically 
+
+
+	 <img width="1207" height="442" alt="image" src="https://github.com/user-attachments/assets/02b631c3-d525-4414-9a4d-847d249678ad" />
+
+	 <img width="1229" height="575" alt="image" src="https://github.com/user-attachments/assets/42dd371b-d2eb-4856-ae94-2be8dfac9dbf" />
+
+ Spring cloud stream needs machinism to invoke the supplier again and again to send the messages 
+	 we can provide this poller configuration 
+
+	 
+
