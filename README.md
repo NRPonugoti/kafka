@@ -767,9 +767,9 @@ Function :
 
 # Spring cloud Stream : Building Producer Application 
 
-     1. Build a simple producer application 
-	 2. Produce message with Key 
-	 3. Produce messages dynamically 
+ Build a simple producer application 
+ Produce message with Key 
+ Produce messages dynamically 
 
 
 	 <img width="1207" height="442" alt="image" src="https://github.com/user-attachments/assets/02b631c3-d525-4414-9a4d-847d249678ad" />
@@ -781,3 +781,523 @@ Function :
 
 	 
 
+<img width="1006" height="380" alt="image" src="https://github.com/user-attachments/assets/07e88272-1976-43ca-a3ec-8b8553f8fb05" />
+
+to support that Spring has one message buider object using that we can build a message of type 
+
+<img width="1179" height="502" alt="image" src="https://github.com/user-attachments/assets/f48750a2-312d-4715-814c-76349e091805" />
+
+<img width="1202" height="575" alt="image" src="https://github.com/user-attachments/assets/f240120b-b255-45ea-a394-de47b240da17" />
+
+<img width="1679" height="503" alt="image" src="https://github.com/user-attachments/assets/a560742a-b7e1-49e0-a0a4-d844c23b2146" />
+
+ 
+
+Spring cloud module provides a spring component called a Stream Bridge 
+you can auto wire where very you want in your application using that you can send messages for examples 
+<img width="1136" height="583" alt="image" src="https://github.com/user-attachments/assets/bb44d91b-b97a-44e2-b3ad-2717cbe09c33" />
+
+
+when we were using the supplier type the binding name will be derived 
+<img width="1193" height="570" alt="image" src="https://github.com/user-attachments/assets/663dddb0-37ad-40dd-86c1-3a8c83dcda9a" />
+
+if you are going to use string bridge instead of this supplier then what is the binding name 
+we can use your own binding name , using this binding name we can send the event 
+<img width="1214" height="566" alt="image" src="https://github.com/user-attachments/assets/5d555964-1b8d-498b-b14c-ad13e391e556" />
+
+Stream Bridge: it gives us the ability to produces message dynamically 
+
+# Kafka Producer with Spring Cloud Stream — Revision Notes
+1. Building a Kafka Producer
+
+With Spring Cloud Stream, we can create a Kafka producer using a Supplier bean.
+
+The basic flow is:
+
+Supplier → Spring Cloud Stream → Kafka Topic
+
+The Supplier generates events, and Spring Cloud Stream sends those events to Kafka based on the configured binding.
+
+2. Supplier and Polling
+
+When using a normal Supplier:
+
+Supplier<T>
+    ↓
+Spring Cloud Stream
+    ↓
+Kafka Topic
+
+Spring Cloud Stream needs to invoke/poll the Supplier repeatedly to get new messages.
+
+For example:
+
+@Bean
+public Supplier<Product> productSupplier() {
+    return () -> new Product(...);
+}
+
+The framework repeatedly calls the Supplier to obtain data.
+
+3. Kafka Message = Payload + Metadata
+
+A Kafka message can contain more than just the payload.
+
+Conceptually:
+
+Kafka Message
+├── Key
+├── Value / Payload
+├── Headers / Metadata
+├── Topic
+├── Partition
+└── Other metadata
+
+If you only return the payload, Spring Cloud Stream can handle it easily.
+
+But if you want to explicitly provide a Kafka key, you should return a Message<T>.
+
+4. Message Builder
+
+Spring provides MessageBuilder to create a message containing the payload and additional information.
+
+Conceptually:
+
+MessageBuilder
+    .withPayload(payload)
+    .setHeader(...)
+    .build();
+
+The Supplier therefore becomes:
+
+Supplier<Message<T>>
+
+instead of:
+
+Supplier<T>
+Important
+
+If you need to produce Kafka messages with keys, return Message<T>.
+
+5. Consumer Side
+
+A consumer can consume either:
+
+T
+
+or:
+
+Message<T>
+
+If the consumer only needs the payload:
+
+Consumer<Product>
+
+If the consumer needs Kafka metadata such as:
+
+Key
+Topic
+Partition
+Headers
+
+then it can consume:
+
+Consumer<Message<Product>>
+Important
+
+Using Message<T> on the consumer side is optional.
+
+6. Kafka Stores Data as Bytes
+
+One of the most important Kafka concepts:
+
+Kafka ultimately stores keys and values as bytes.
+
+Therefore:
+
+Producer
+Java Object
+    ↓
+Serialization
+    ↓
+Bytes
+    ↓
+Kafka
+    ↓
+Bytes
+    ↓
+Deserialization
+    ↓
+Consumer Java Object
+7. Serialization and Deserialization
+Producer
+
+The producer must convert the object into bytes.
+
+Java Object → Serializer → Bytes
+Consumer
+
+The consumer converts bytes back into an object.
+
+Bytes → Deserializer → Java Object
+
+Spring Cloud Stream handles much of this automatically for the payload.
+
+8. Payload vs Kafka Key Serialization
+
+This is an important distinction.
+
+Spring Cloud Stream can handle serialization of:
+
+Payload
+Custom headers
+
+But it does not automatically assume the type of the Kafka key.
+
+Why?
+
+Because the key could be:
+
+String
+Integer
+Long
+UUID
+Custom Object
+byte[]
+
+Different types require different serializers.
+
+For example:
+
+String key
+    ↓
+StringSerializer
+    ↓
+Bytes
+
+or:
+
+Integer key
+    ↓
+IntegerSerializer
+    ↓
+Bytes
+9. Two Options for Kafka Keys
+
+If you want to produce Kafka messages with keys, you basically have two options.
+
+Option 1 — Use Raw Bytes
+
+Provide the key directly as bytes.
+
+Key → byte[]
+Option 2 — Configure Serializer/Deserializer
+
+Configure the appropriate:
+
+Producer → Serializer
+Consumer → Deserializer
+
+For example:
+
+Producer
+String key
+   ↓
+StringSerializer
+   ↓
+Kafka
+
+
+Kafka
+   ↓
+StringDeserializer
+   ↓
+Consumer
+Very Important
+
+You need to configure the appropriate serializer/deserializer on both sides.
+
+10. Why Kafka Key Is Important
+
+The Kafka key can affect:
+
+Partitioning
+
+Kafka uses the key to determine the partition in many common configurations.
+
+Same Key
+   ↓
+Same Partition
+
+This can help maintain ordering for messages with the same key.
+
+For example:
+
+Order-101 → Partition 2
+Order-101 → Partition 2
+Order-101 → Partition 2
+
+Therefore, the key can influence:
+
+Partition assignment
+Message ordering
+Processing behavior
+11. StreamBridge
+
+StreamBridge is another important Spring Cloud Stream feature.
+
+It allows us to send messages dynamically.
+
+Instead of relying on a Supplier that is continuously polled:
+
+Supplier
+   ↓
+Repeated invocation
+   ↓
+Kafka
+
+we can use:
+
+Application Event
+      ↓
+StreamBridge
+      ↓
+Kafka Topic
+12. When Should We Use StreamBridge?
+
+StreamBridge is useful when an event happens dynamically.
+
+For example:
+
+Product Viewed
+       ↓
+StreamBridge
+       ↓
+Kafka
+
+or:
+
+Order Placed
+       ↓
+StreamBridge
+       ↓
+Kafka
+
+or:
+
+Payment Completed
+       ↓
+StreamBridge
+       ↓
+Kafka
+
+You don't need the framework to continuously poll a Supplier.
+
+13. StreamBridge Is a Spring Component
+
+Because StreamBridge is a Spring component, we can inject it where needed.
+
+Conceptually:
+
+@Autowired
+private StreamBridge streamBridge;
+
+Then when an event occurs:
+
+Something happens
+      ↓
+streamBridge.send(...)
+      ↓
+Kafka
+14. Supplier vs StreamBridge
+
+This is a very important interview/revision comparison.
+
+Supplier	StreamBridge
+Framework repeatedly invokes Supplier	Application explicitly sends message
+Good for continuous/event generation	Good for dynamic events
+Binding is commonly derived	Can use custom binding name
+Polling model	Event-driven sending
+Simple producer model	More flexible producer model
+Simple way to remember
+
+Supplier = "Give me data."
+
+StreamBridge = "I have data; send it now."
+
+15. Binding Names
+
+With a Supplier, Spring Cloud Stream can derive the binding name.
+
+With StreamBridge, we commonly define a custom binding name.
+
+For example:
+
+orderProducer
+      ↓
+StreamBridge
+      ↓
+Kafka Topic
+
+Then configuration maps:
+
+orderProducer → orders-topic
+
+This gives us flexibility to configure:
+
+Topic
+Destination
+Producer properties
+Other binding-related settings
+16. Sending Directly to Kafka Topic
+
+It is possible to send messages directly to a topic.
+
+However:
+
+Direct topic usage is generally not considered a good production practice when using Spring Cloud Stream's abstraction.
+
+But it can be useful for:
+
+Integration testing
+
+For example:
+
+Integration Test
+      ↓
+Send message
+      ↓
+Kafka Topic
+      ↓
+Consumer
+      ↓
+Verify result
+
+The lecture will cover this later.
+
+17. Reactive Programming
+
+If you are using reactive programming, the approach becomes even simpler.
+
+Instead of:
+
+Supplier<T>
+
+you can return:
+
+Flux<T>
+
+Conceptually:
+
+Flux<T>
+   ↓
+Spring Cloud Stream subscribes
+   ↓
+Events
+   ↓
+Kafka
+
+There is no need for traditional polling.
+
+18. Why Flux Simplifies the Process
+
+A normal Supplier works like:
+
+Framework
+   ↓
+Call Supplier
+   ↓
+Get item
+   ↓
+Call Supplier again
+   ↓
+Get item
+
+With reactive programming:
+
+Flux
+ ↓
+Subscribe
+ ↓
+Item 1
+Item 2
+Item 3
+Item 4
+...
+
+Spring Cloud Stream subscribes to the Flux and receives the emitted items.
+
+19. Sink / Sinks in Reactive Programming
+
+A Sinks object can be used to manually emit events.
+
+Conceptually:
+
+Application
+    ↓
+Sink
+    ↓
+Flux
+    ↓
+Spring Cloud Stream
+    ↓
+Kafka
+
+For example:
+
+Something happens
+      ↓
+sink.tryEmitNext(event)
+      ↓
+Flux
+      ↓
+Spring Cloud Stream
+      ↓
+Kafka Topic
+
+This means whenever your application emits an item into the sink, Spring Cloud Stream receives it through the Flux and sends it to Kafka.
+
+⭐ Final Architecture to Remember
+                SPRING CLOUD STREAM
+
+
+     ┌──────────────────────────────┐
+     │                              │
+     │       Producer Application   │
+     │                              │
+     │  Supplier<T>                 │
+     │       OR                     │
+     │  StreamBridge                │
+     │       OR                     │
+     │  Flux<T> / Sink              │
+     │                              │
+     └──────────────┬───────────────┘
+                    ↓
+             Spring Cloud Stream
+                    ↓
+             Serialization
+                    ↓
+              Kafka Producer
+                    ↓
+              Kafka Topic
+                    ↓
+             Kafka Consumer
+                    ↓
+            Deserialization
+                    ↓
+             Consumer App
+⭐ Key Points for Interview
+Supplier is useful when Spring Cloud Stream should repeatedly obtain messages.
+StreamBridge is useful when the application needs to send messages dynamically.
+Use Message<T> when you need to provide Kafka key/headers/metadata.
+Kafka stores keys and values as bytes.
+Producer performs serialization.
+Consumer performs deserialization.
+Spring Cloud Stream handles payload serialization/deserialization.
+Kafka key serialization needs explicit configuration because the key type is not assumed.
+Configure serializer on producer and deserializer on consumer.
+Kafka keys can affect partitioning and ordering.
+Reactive applications can use Flux<T> instead of traditional polling.
+Sink → Flux → Spring Cloud Stream → Kafka allows events to be emitted reactively.
+StreamBridge is useful for dynamic event-driven message production.
+Direct topic sending can be useful in integration tests, although it isn't generally preferred as the production abstraction.
