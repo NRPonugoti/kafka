@@ -656,3 +656,28 @@ Redundancy + High Availability
 One-line memory trick:
 
 Brokers give you capacity, partitions give you scalability, and replication gives you availability.
+
+
+
+# Cluster Configuration Properties 
+<img width="1275" height="466" alt="image" src="https://github.com/user-attachments/assets/74f9fd51-6410-4273-962f-b7c7f3744572" />
+
+
+<img width="1737" height="827" alt="image" src="https://github.com/user-attachments/assets/57ce2907-e7aa-4c67-b53f-a4f4ba84493d" />
+
+<img width="1553" height="673" alt="image" src="https://github.com/user-attachments/assets/6a472198-5545-43f2-bb12-3ccffcd11bb6" />
+
+
+kafka is statefull application , it store data on disk 
+
+A Kafka cluster does not give the high availability and horizantal scalability automatically 
+the multiple brokers in the kafka cluster provide only the capacity 
+only partitions provides the scalability and the replication provides the availability 
+we were able to setup kafka cluster with a docker containers and we were able to create a topic with multiple partitions 
+and a replication factor so that kafka could elect multiple leaders for each partitions 
+we were able to see the followers for our topic partitions to replicate the data for high availability 
+
+
+we also noticed that how the bootstrap server was able to give the other server information to our application 
+once application is connected to the cluster via bootstrapserver then even when bootstrap server goes down
+our application just fine 
